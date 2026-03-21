@@ -1,0 +1,13 @@
+playwright
+qdrant-client
+python-dotenv
+openai
+fastapi
+uvicorn[standard]
+python-multipart
+filelock
+rapidfuzz
+pytest
+httpx
+aiofiles
+pillow

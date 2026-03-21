@@ -1,0 +1,5 @@
+{
+  "Wife":   {"allergies":["nuts","shellfish"],"preferences":["dark chocolate","flowers","spa"],"district":"Colombo","order_history":[],"budget_lkr":5000},
+  "Mother": {"allergies":["gluten"],          "preferences":["fruit baskets","tea"],          "district":"Kandy",  "order_history":[],"budget_lkr":3000},
+  "Friend": {"allergies":[],                  "preferences":["electronics","books"],          "district":"Galle",  "order_history":[],"budget_lkr":15000}
+}
