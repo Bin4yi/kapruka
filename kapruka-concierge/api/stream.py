@@ -75,14 +75,11 @@ def _reset_events() -> list[dict]:
                 "response":       "",
             },
         },
-        # gallery_surface — hide all product cards (flat keys)
+        # gallery_surface — clear products array
         {
             "type":      "dataModelUpdate",
             "surfaceId": "gallery_surface",
-            "data": {
-                "g0_visible":False, "g1_visible":False,
-                "g2_visible":False, "g3_visible":False,
-            },
+            "data": {"products": []},
         },
         # notification_surface — hide toast
         {

@@ -119,8 +119,10 @@ Guidelines:
 - 'search' if the user wants gift ideas, product recommendations, or is browsing.
 - 'preference_update' if the user is telling you about allergies, likes, dislikes, or budget.
 - 'delivery_check' if the user asks whether delivery is available to a location.
-- 'order_history' if the user asks about previous purchases.
-- 'chitchat' for greetings, thanks, or fully off-topic messages.
+- 'order_history' if the user asks about PAST PURCHASES on Kapruka (e.g. "what did I buy", "my order status").
+- 'chitchat' for greetings, thanks, off-topic messages, OR questions about the current conversation
+  session such as "what did I search", "what have I been looking for", "my recent searches",
+  "what did I ask before". These refer to THIS conversation, not Kapruka purchase history.
 - 'clarification' if the message is too vague to act on without a follow-up.
 
 Always extract any recipient, category, budget (LKR), or district that is mentioned,

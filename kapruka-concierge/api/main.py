@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.stream import router as stream_router
 from api.action import router as action_router
 from api.image import router as image_router
+from api.profile import router as profile_router
 
 app = FastAPI(title="Kapruka Concierge API")
 
@@ -25,3 +26,4 @@ app.add_middleware(
 app.include_router(stream_router)
 app.include_router(action_router)
 app.include_router(image_router)
+app.include_router(profile_router)

@@ -7,3 +7,6 @@ frontend/dist/
 image_cache/
 *.log
 
+kapruka-concierge/metrics.csv
+kapruka-concierge/phase1/cag_cache.json
+kapruka-concierge/metrics.csv

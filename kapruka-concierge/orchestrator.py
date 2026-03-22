@@ -90,26 +90,21 @@ def _get_session(session_id: str) -> SessionManager:
 
 
 def _map_products_to_gallery(products: list[dict]) -> dict:
-    """Map up to 4 products into the g0…g3 flat DM keys the gallery expects."""
-    data = {}
-    for i in range(4):
-        k = f"g{i}"
-        if i < len(products):
-            p = products[i]
-            data.update({
-                f"{k}_name":    p.get("name", ""),
-                f"{k}_price":   str(int(p["price"])) if p.get("price") else "",
-                f"{k}_image":   p.get("image_url", "") or p.get("image_urls", [""])[0],
-                f"{k}_rating":  str(p["rating"]) if p.get("rating") else "",
-                f"{k}_safe":    True,
-                f"{k}_visible": True,
-            })
-        else:
-            data.update({
-                f"{k}_name": "", f"{k}_price": "", f"{k}_image": "",
-                f"{k}_rating": "", f"{k}_safe": True, f"{k}_visible": False,
-            })
-    return data
+    """Map up to 6 products into a products array for the A2UI ProductGallery widget."""
+    return {
+        "products": [
+            {
+                "name":   p.get("name", ""),
+                "price":  p.get("price"),
+                "image":  p.get("image_url", "") or (p.get("image_urls") or [""])[0],
+                "rating": p.get("rating"),
+                "tags":   (p.get("tags") or [])[:3],
+                "url":    p.get("url", ""),
+                "safe":   True,
+            }
+            for p in products[:6]
+        ]
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -318,7 +313,7 @@ class KaprukaConciergeOrchestrator:
     # ------------------------------------------------------------------
 
     async def _handle_order_history(self) -> AsyncGenerator[dict, None]:
-        reply = "Order history isn't connected yet — visit kapruka.com/myorders to check your past orders."
+        reply = "I can't access your Kapruka purchase history directly — visit kapruka.com/myorders to see your past orders.\n\nIf you meant your recent searches in this conversation, just ask \"what did I search?\" and I'll recap them for you."
         yield _dm("agent_surface", {"ph_d": "done"})
         yield _dm("chat_surface", {"response": reply, "thinking": False})
         yield _br("chat_surface")
@@ -327,6 +322,40 @@ class KaprukaConciergeOrchestrator:
         self, message: str, session: SessionManager
     ) -> AsyncGenerator[dict, None]:
         history = session.to_llm_messages()
+
+        # Detect session-history questions and answer from short-term memory directly
+        _session_keywords = (
+            "recent search", "recent searches", "what did i search",
+            "what have i searched", "what did i ask", "what did i look for",
+            "my searches", "previous search", "search history",
+        )
+        if any(kw in message.lower() for kw in _session_keywords):
+            import re as _re
+            past_queries = []
+            for t in session.get_history():
+                if t["role"] != "user":
+                    continue
+                # Strip injected [Recipient: X] prefix added by stream.py
+                content = _re.sub(r"^\[Recipient:[^\]]+\]\s*", "", t["content"]).strip()
+                # Skip other session-history queries (including this one)
+                if any(kw in content.lower() for kw in _session_keywords):
+                    continue
+                if content:
+                    past_queries.append(content)
+            if past_queries:
+                items = "\n".join(f"  • {q}" for q in past_queries[-5:])
+                reply = f"Here's what you've searched in this session:\n{items}"
+            else:
+                reply = "You haven't searched for anything else in this session yet. What gift can I help you find?"
+            yield _dm("agent_surface", {"ph_d": "done"})
+            yield _dm("memory_surface", {"st_active": True})
+            yield _dm("chat_surface", {"response": reply, "thinking": False})
+            yield _br("chat_surface")
+            session.add_turn("assistant", reply)
+            await asyncio.sleep(0.1)
+            yield _dm("memory_surface", {"st_active": False})
+            return
+
         resp_obj = await asyncio.to_thread(
             _oai().chat.completions.create,
             model    = _oai_model(),
